@@ -12,5 +12,6 @@ foreach(SOURCE_FILE ${EXERCISES})
     get_filename_component(FOLDER_PATH ${SOURCE_FILE} DIRECTORY)
     get_filename_component(FOLDER_NAME ${FOLDER_PATH} NAME)
     get_filename_component(EXERCISE_NAME ${SOURCE_FILE} NAME_WE)
-    add_executable(${FOLDER_NAME}_${EXERCISE_NAME} ${SOURCE_FILE})
+    add_executable(${FOLDER_NAME}_${EXERCISE_NAME} ${SOURCE_FILE}
+            bootcamp-01/ex01_even_odd.cpp)
 endforeach()
