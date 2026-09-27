@@ -62,7 +62,7 @@ int main() {
     // nonexistent classB[2]) -- not this student's own address. &pointer[0] (or
     // just pointer) would print classB[1]'s real address.
     printf("Student.%s.\n--Age: %d.\n--Number: %d.\n--Address: %p\n",
-       pointer->name.c_str(), pointer->age, pointer->number, (void*)&pointer[1]);
+       pointer->name.c_str(), pointer->age, pointer->number, (void*)&pointer[0]);
 
     delete[] classB;
     return 0;

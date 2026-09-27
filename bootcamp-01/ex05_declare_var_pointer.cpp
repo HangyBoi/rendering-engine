@@ -7,9 +7,7 @@ int main() {
 
     printf("A = %d\n", A);
     printf("Address of A = %p\n", (void*)pA);
-    // Bug: label says "Address of pA" but this recomputes &A again (same value
-    // as the line above). To show where pA itself lives, print (void*)&pA.
-    printf("Address of pA = %p\n", (void*)&A);
+    printf("Address of pA = %p\n", (void*)&pA);
     printf("*pA = %d\n", *pA);
 
     return 0;
