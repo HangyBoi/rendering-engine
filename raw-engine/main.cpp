@@ -71,8 +71,8 @@ int main() {
         return -1;
     }
 
-    const GLuint vertexShader = generateShader("shaders/vertex.vs", GL_VERTEX_SHADER);
-    const GLuint fragmentShader = generateShader("shaders/fragment.fs", GL_FRAGMENT_SHADER);
+    const GLuint vertexShader = generateShader("shaders/vertex.vert", GL_VERTEX_SHADER);
+    const GLuint fragmentShader = generateShader("shaders/fragment.frag", GL_FRAGMENT_SHADER);
 
     const unsigned int shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
@@ -94,9 +94,9 @@ int main() {
     glBindVertexArray(VAO);
 
     const float vertices[] = {
-            0.0f, 0.5f, 0.0f,
-            0.5f, -0.5f, 0.0f,
-            -0.5f, -0.5f, 0.0f
+            1.0f, 1.0f, 0.0f,      // top right
+            -1.0f, -1.0f, 0.0f,     // bottom left
+            1.0f, -1.0f, 0.0f       // bottom right
     };
     GLuint VBO;
     glGenBuffers(1, &VBO);

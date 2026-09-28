@@ -17,7 +17,7 @@ applies repo-wide but is harmless to the plain bootcamp-XX exercises, since they
   `CMAKE_SOURCE_DIR`, since the latter always points at the *top-level*
   source dir (the repo root) once this folder is pulled in via
   `add_subdirectory` rather than opened as its own standalone project.
-- `shaders/vertex.vs`, `shaders/fragment.fs` - the two GLSL shaders `main.cpp`
+- `shaders/vertex.vert`, `shaders/fragment.frag` - the two GLSL shaders `main.cpp`
   loads at startup. `CMakeLists.txt` copies this folder next to the built
   executable automatically (`copy_shaders` target), so builds keep working
   after moving the project.
