@@ -15,8 +15,8 @@ foreach(SOURCE_FILE ${EXERCISES})
     add_executable(${FOLDER_NAME}_${EXERCISE_NAME} ${SOURCE_FILE})
 endforeach()
 
-# Bootcamp 3+: the Raw Engine hand-out. Kept in its own subfolder because it
-# needs its own vcpkg packages (glad, glfw3, glm) that the bootcamp-XX
+# Bootcamp 3+: the Raw Engine (v2 since Bootcamp 4). Kept in its own subfolder because it
+# needs its own vcpkg packages (glad, glfw3, glm, assimp, stb) that the bootcamp-XX
 # exercises above don't, and pulled in explicitly below since "raw-engine"
 # doesn't match the bootcamp-* glob pattern the loop above searches for.
 add_subdirectory(raw-engine)

@@ -4,3 +4,6 @@ cmake-build-*/
 build/
 out/
 _original/
+
+# The repo-root .gitignore ignores *.obj (compiled object files). In this folder .obj means 3D models.
+!models/*.obj

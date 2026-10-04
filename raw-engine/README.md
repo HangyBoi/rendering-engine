@@ -1,51 +1,80 @@
-# Raw Engine
+# Raw Engine (v2)
 
-The starting point for the OpenGL/GLSL bootcamps (3 onward). Lives as a subfolder of this
-repo, with its own `CMakeLists.txt` pulled in via `add_subdirectory(raw-engine)` from the
-root one, since it needs a different toolchain (a vcpkg-installed GLFW / GLAD / GLM stack)
-than the C++-only bootcamps (1-2) do. The root CMake project's vcpkg toolchain-file setting
-applies repo-wide but is harmless to the plain bootcamp-XX exercises, since they never call
-`find_package`.
+The starting point for the OpenGL/GLSL bootcamps. Version 2 is the **final** version of the
+engine (Bootcamp 4 hand-out, `RawEngine_v2_2526_3.zip`): everything from Bootcamp 4 onward is
+built on top of this folder. It lives as a subfolder of this repo, with its own `CMakeLists.txt`
+pulled in via `add_subdirectory(raw-engine)` from the root one, since it needs a different
+toolchain (a vcpkg-installed GLFW / GLAD / GLM / Assimp / stb stack) than the C++-only bootcamps
+(1-2) do. The root CMake project's vcpkg toolchain-file setting applies repo-wide but is harmless
+to the plain bootcamp-XX exercises, since they never call `find_package`.
 
 ## What is here
 
-- `main.cpp`, `CMakeLists.txt` - the engine as unpacked from the bootcamp 3
-  hand-out (`RawEngine_v1_2526_2.zip`, kept as-is under `_original/` for
-  reference, not part of the build, and excluded from git by this folder's
-  own `.gitignore`). One fix from the original hand-out: the shader-copy
-  steps in `CMakeLists.txt` now use `CMAKE_CURRENT_SOURCE_DIR` instead of
-  `CMAKE_SOURCE_DIR`, since the latter always points at the *top-level*
-  source dir (the repo root) once this folder is pulled in via
-  `add_subdirectory` rather than opened as its own standalone project.
-- `shaders/vertex.vert`, `shaders/fragment.frag` - the two GLSL shaders `main.cpp`
-  loads at startup. `CMakeLists.txt` copies this folder next to the built
-  executable automatically (`copy_shaders` target), so builds keep working
-  after moving the project.
+| Path | What it is |
+| --- | --- |
+| `main.cpp` | Window + OpenGL setup, shader loading, scene (textured quad + monkey), Dear ImGui "Hello" panel, render loop |
+| `core/model.h/.cpp` | `Model`: a list of meshes plus its own `modelMatrix`; `translate`, `rotate`, `scale`, `getModelMatrix`, `render` |
+| `core/mesh.h/.cpp` | `Mesh`: vertices + indices and the VAO/VBO/EBO that hold them; `render()`, `generateQuad()` |
+| `core/vertex.h` | `Vertex`: position, normal, uv (32 bytes) |
+| `core/assimpLoader.h/.cpp` | `AssimpLoader::loadModel(path)`: Assimp scene -> `Model` (Triangulate, FlipUVs, GenNormals) |
+| `core/texture.h/.cpp` | `Texture`: loads an image with stb_image into an OpenGL texture, `getId()` |
+| `shaders/` | `modelVertex.vert` (applies `mvpMatrix`), `fragment.frag` (normal as colour), `texture.frag` (samples `text`), `vertex.vert` (the Bootcamp 3 pass-through vertex shader, unused by v2's `main.cpp`) |
+| `models/nonormalmonkey.obj` | Suzanne, exported without normals (Assimp generates them) |
+| `textures/CMGaTo_crop.png` | The cat texture on the quad |
+| `imgui/` | Dear ImGui 1.92.0 (WIP snapshot) source, bundled with the hand-out - **not** a vcpkg package here |
+| `_original/` | The untouched hand-out zips (v1 and v2). Reference only: not part of the build and excluded from git by this folder's `.gitignore` |
 
-Left out of this copy on purpose: `.idea/` (personal IDE state), the old
-`cmake-build-debug/` (compiled binaries), and `CMakeSettings.json` (a Visual
-Studio-specific CMake file; CLion's own toolchain/profile settings do the
-same job and are not committed).
+## Changes compared with the hand-out
+
+Only `CMakeLists.txt`, `.gitignore`, the shader file names and the three shader paths in `main.cpp` differ from `RawEngine_v2_2526_3.zip`. All other source files are byte-for-byte the originals.
+
+1. **`CMAKE_SOURCE_DIR` -> `CMAKE_CURRENT_SOURCE_DIR`** in all copy steps. `CMAKE_SOURCE_DIR` always points at the *top-level* project (the repo root) once this folder is pulled in via `add_subdirectory`, so the hand-out's version looks for `<repo>/shaders`, which does not exist. (Same fix v1 needed.)
+2. **`copy_shaders` became `copy_assets`** and now copies `shaders/`, `models/` and `textures/` on *every* build. In the hand-out only the shaders were copied every build; models and textures were copied by `PRE_BUILD` steps that only run when the executable is relinked, so editing a `.obj` or `.png` without touching C++ code left the old file in the build folder.
+3. **`.gitignore`: `!models/*.obj`.** The repo-root `.gitignore` contains the stock C++ pattern `*.obj` (compiled object files), which would silently keep `nonormalmonkey.obj` out of git - a fresh clone would then fail to find its model. Here `.obj` means 3D model, so the folder re-includes them.
+4. **`CMakeSettings.json` not copied.** It is a Visual Studio-specific file (the hand-out ships ARM64/x64 presets); CLion's own CMake profile does the same job. Same decision as for v1.
+
+5. **Shader files renamed to `.vert` / `.frag`** (`modelVertex.vs` -> `modelVertex.vert`, `fragment.fs` -> `fragment.frag`, `texture.fs` -> `texture.frag`, `vertex.vs` -> `vertex.vert`), the same convention as the earlier "importing the glsl plugin" commit, so the GLSL plugin highlights them. The shader *contents* are unchanged; the only edit in `main.cpp` is the three path strings in the `generateShader(...)` calls.
+
+Also left out on purpose: `.idea/`, `cmake-build-*/`, macOS metadata (`__MACOSX/`, `.DS_Store`).
 
 ## Dependencies (via vcpkg)
 
-`CMakeLists.txt` expects three vcpkg packages, found through a CMake toolchain-file flag
-set once per machine in CLion's CMake profile for this repo (Settings | Build, Execution,
-Deployment | CMake | CMake options: `-DCMAKE_TOOLCHAIN_FILE=<vcpkg root>/scripts/buildsystems/vcpkg.cmake`):
+`CMakeLists.txt` expects five vcpkg packages, found through a CMake toolchain-file flag set once
+per machine in CLion's CMake profile (Settings | Build, Execution, Deployment | CMake | CMake
+options: `-DCMAKE_TOOLCHAIN_FILE=<vcpkg root>/scripts/buildsystems/vcpkg.cmake`):
 
 - `glad` - the OpenGL function loader
 - `glfw3` - window and input handling
 - `glm` - vector/matrix math
+- `assimp` - 3D model loading (the long one: it builds from source, expect 10-20 minutes the first time)
+- `stb` - header-only image loading (`stb_image.h`), found with `find_package(Stb)`
+
+One-time install (Windows, classic mode):
+
+```
+C:\vcpkg\vcpkg.exe install glad:x64-windows glfw3:x64-windows glm:x64-windows assimp:x64-windows stb:x64-windows
+```
+
+Dear ImGui does **not** need a vcpkg package: its source is in `imgui/` and compiled by
+`CMakeLists.txt`. (The comment above the ImGui includes in `main.cpp` mentions
+`vcpkg install imgui[...]`; that is a leftover from an earlier setup and can be ignored.)
+
+## Build and run
+
+Open the repo root in CLion, set the vcpkg toolchain flag once, **Reload CMake** (Reset Cache
+the first time), pick the `RawEngine` run configuration, press Run. The executable is built into
+`cmake-build-*/raw-engine/`, and `shaders/`, `models/`, `textures/` are copied right next to it -
+that folder must be the working directory (CLion's default for the target).
+
+Expected result: a window titled "LearnOpenGL", the cat texture on a big quad, the monkey (coloured
+by its normals) spinning in front of it, and a small "Raw Engine v2 / Hello :)" ImGui window.
+The texture looks upside down: that is a known property of the hand-out (see the Bootcamp 4 guides).
 
 ## Git history note
 
-No separate repository for this folder was ever published — Yvens's own Raw Engine repo
-link never materialized for v1, and Bootcamp 4 is expected to hand out a v2 instead of a
-git link. Rather than wait, this folder was folded directly into `rendering-engine` as a
-subfolder (see the repo root's `CMakeLists.txt`, which pulls it in with
-`add_subdirectory(raw-engine)`), so it syncs across devices the same way the bootcamp
-exercises already do — clone once, open the repo root in CLion, set the vcpkg toolchain
-flag once per machine, build. If Yvens's v1 repo does surface later, or when the Bootcamp 4
-v2 hand-out arrives, diff it against this folder rather than replacing it outright, since
-the `CMAKE_CURRENT_SOURCE_DIR` fix and this subfolder wiring would need to be reapplied to
-a fresh copy.
+No separate repository for this folder was ever published, so it was folded into `rendering-engine`
+as a subfolder (see the repo root's `CMakeLists.txt`) and syncs across devices the same way the
+bootcamp exercises do: clone once, open the repo root in CLion, set the vcpkg toolchain flag once per
+machine, build. The v1 -> v2 swap replaced `main.cpp`, `CMakeLists.txt` and the two v1 shaders in place
+(history of v1 is in git; `_original/RawEngine_v1_2526_2.zip` still has the untouched hand-out). Since v2
+is final, no further engine hand-outs are expected; your own changes from here on are edits to this folder.
