@@ -62,6 +62,51 @@ namespace core {
         return Mesh(vertexVector, indices);
     }
 
+    // Move constructor: steal other's handles. Nothing to delete first, this new Mesh owns nothing yet.
+    Mesh::Mesh(Mesh &&other) noexcept {
+        // Take the other object’s handles.
+        VAO = other.VAO;
+        VBO = other.VBO;
+        EBO = other.EBO;
+        // Set the other object’s handles to 0.
+        other.VAO = 0;
+        other.VBO = 0;
+        other.EBO = 0;
+
+        // std::move on a vector = take its contents instead of copying them (other's vectors end up empty).
+        vertices = std::move(other.vertices);
+        indices  = std::move(other.indices);
+    }
+
+    // Move assignment: like the move constructor, but this Mesh may already own buffers -> give those back first.
+    Mesh& Mesh::operator=(Mesh&& other) noexcept {
+        // Guard against `a = std::move(a)`: we would delete our own data, then "steal" it from ourselves.
+        if (this != &other) {
+            // Delete the OLD buffers before overwriting the numbers, otherwise they leak (nobody knows them anymore).
+            if (VAO != 0) glDeleteVertexArrays(1, &VAO);
+            VAO = other.VAO;
+            other.VAO = 0;
+            if (VBO != 0) glDeleteBuffers(1, &VBO);
+            VBO = other.VBO;
+            other.VBO = 0;
+            if (EBO != 0) glDeleteBuffers(1, &EBO);
+            EBO = other.EBO;
+            other.EBO = 0;
+
+            vertices = std::move(other.vertices);
+            indices  = std::move(other.indices);
+        }
+        return *this;
+    }
+
+    // Destructor: hand the GPU tickets back. A moved-from Mesh holds 0s, so it deletes nothing (no double delete).
+    // Needs a living OpenGL context, so Meshes must die BEFORE glfwTerminate().
+    Mesh::~Mesh() {
+        if (VAO != 0) glDeleteVertexArrays(1, &VAO);
+        if (VBO != 0) glDeleteBuffers(1, &VBO);
+        if (EBO != 0) glDeleteBuffers(1, &EBO);
+    }
+
     void Mesh::render() {
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);

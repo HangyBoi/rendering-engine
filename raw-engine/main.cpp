@@ -139,8 +139,11 @@ int main() {
     glDeleteShader(fragmentShader);
     glDeleteShader(textureShader);
 
-    core::Mesh quad = core::Mesh::generateQuad();
-    core::Model quadModel({quad});
+    // Mesh can't be copied, so we build the vector by moving. `{quad}` would copy, so it is gone.
+    // generateQuad() returns a temporary -> push_back moves it in. After std::move(quadMeshes) the vector is empty: don't use it.
+    std::vector<core::Mesh> quadMeshes;
+    quadMeshes.push_back(core::Mesh::generateQuad());
+    core::Model quadModel(std::move(quadMeshes));
     quadModel.translate(glm::vec3(0,0,-2.5));
     quadModel.scale(glm::vec3(5, 5, 1));
 

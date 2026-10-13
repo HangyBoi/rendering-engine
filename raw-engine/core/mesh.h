@@ -1,21 +1,38 @@
 #pragma once
 
+#include <utility>
 #include <vector>
 #include <glad/glad.h>
 #include "vertex.h"
 
 namespace core {
+    // Owns its GPU buffers (RAII): created in the constructor, deleted in the destructor.
+    // Exactly ONE owner per GPU object -> copying is deleted, moving is allowed.
     class Mesh {
     private:
         std::vector<Vertex> vertices;
         std::vector<GLuint> indices;
-        GLuint VAO;
-        GLuint VBO;
-        GLuint EBO;
+        // Handles = "tickets" (just numbers). The real data lives on the GPU. 0 = "owns nothing".
+        GLuint VAO = 0;
+        GLuint VBO = 0;
+        GLuint EBO = 0;
+
     public:
         Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices);
         void render();
         static Mesh generateQuad();
+
+        // Copy Constructor
+        Mesh(const Mesh&) = delete;                 // copying to create a new Mesh is now a compiler error
+        // Copy Assignment
+        Mesh& operator=(const Mesh&) = delete;      // copying over an existing Mesh is now a compiler error
+        // Move Constructor
+        Mesh(Mesh&& other) noexcept;                // creating a new Mesh by taking from other
+        // Move Assignment
+        Mesh& operator=(Mesh&& other) noexcept;     // overwrite this Mesh by taking from other
+        // Destructor
+        ~Mesh();                                    // hand the ticket back
+
     private:
         void setupBuffers();
     };
