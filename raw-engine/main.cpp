@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <algorithm>
 #include "core/mesh.h"
 #include "core/assimpLoader.h"
@@ -81,13 +82,15 @@ int main() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    // Scope: everything that owns GL objects lives in this block and is destroyed at its closing
+    // brace, while the GL context still exists (before ImGui shutdown and glfwTerminate).
     {
         core::Shader modelShader("shaders/modelVertex.vert", "shaders/fragment.frag");
         core::Shader textureShader("shaders/modelVertex.vert", "shaders/texture.frag");
 
         if (!modelShader.isValid() || !textureShader.isValid()) {
             printf("Failed to initialize shaders\n");
-            return -1;
+            return -1;  // shaders are destroyed here, context still alive
         }
 
         // Mesh can't be copied, so move it in: push_back moves the temporary,
@@ -134,10 +137,11 @@ int main() {
             processInput(window);
             suzanne.rotate(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(rotationStrength) * static_cast<float>(deltaTime));
 
+            // use() first: the setters write to the active program
             textureShader.use();
             textureShader.setMat4("mvpMatrix", (projection * view * quadModel.getModelMatrix()));
             glActiveTexture(GL_TEXTURE0);
-            textureShader.setInt("text", 0);
+            textureShader.setInt("diffuseTexturexx", 0);  // sampler reads texture unit 0
             glBindTexture(GL_TEXTURE_2D, cmgtGatoTexture.getId());
             quadModel.render();
             glBindVertexArray(0);
