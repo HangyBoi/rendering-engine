@@ -28,6 +28,8 @@ add_executable(RawEngine main.cpp
         core/vertex.h
         core/model.cpp
         core/model.h
+        core/shader.cpp
+        core/shader.h
 )
 
 add_custom_command(

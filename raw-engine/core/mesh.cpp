@@ -63,7 +63,7 @@ namespace core {
     }
 
     // Move constructor: take other's handles. Nothing to free first, this Mesh is new.
-    Mesh::Mesh(Mesh &&other) noexcept {
+    Mesh::Mesh(Mesh&& other) noexcept {
         // Take the other object’s handles.
         VAO = other.VAO;
         VBO = other.VBO;

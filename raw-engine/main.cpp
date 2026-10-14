@@ -2,12 +2,11 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <fstream>
-#include <sstream>
 #include <algorithm>
 #include "core/mesh.h"
 #include "core/assimpLoader.h"
 #include "core/texture.h"
+#include "core/shader.h"
 
 //#define MAC_CLION
 #define VSTUDIO
@@ -39,34 +38,6 @@ void framebufferSizeCallback(GLFWwindow *window,
     g_width = width;
     g_height = height;
     glViewport(0, 0, width, height);
-}
-
-std::string readFileToString(const std::string &filePath) {
-    std::ifstream fileStream(filePath, std::ios::in);
-    if (!fileStream.is_open()) {
-        printf("Could not open file: %s\n", filePath.c_str());
-        return "";
-    }
-    std::stringstream buffer;
-    buffer << fileStream.rdbuf();
-    return buffer.str();
-}
-
-GLuint generateShader(const std::string &shaderPath, GLuint shaderType) {
-    printf("Loading shader: %s\n", shaderPath.c_str());
-    const std::string shaderText = readFileToString(shaderPath);
-    const GLuint shader = glCreateShader(shaderType);
-    const char *s_str = shaderText.c_str();
-    glShaderSource(shader, 1, &s_str, nullptr);
-    glCompileShader(shader);
-    GLint success = 0;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        char infoLog[512];
-        glGetShaderInfoLog(shader, 512, NULL, infoLog);
-        printf("Error! Shader issue [%s]: %s\n", shaderPath.c_str(), infoLog);
-    }
-    return shader;
 }
 
 int main() {
@@ -110,36 +81,15 @@ int main() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    const GLuint modelVertexShader = generateShader("shaders/modelVertex.vert", GL_VERTEX_SHADER);
-    const GLuint fragmentShader = generateShader("shaders/fragment.frag", GL_FRAGMENT_SHADER);
-    const GLuint textureShader = generateShader("shaders/texture.frag", GL_FRAGMENT_SHADER);
-
-    int success;
-    char infoLog[512];
-    const unsigned int modelShaderProgram = glCreateProgram();
-    glAttachShader(modelShaderProgram, modelVertexShader);
-    glAttachShader(modelShaderProgram, fragmentShader);
-    glLinkProgram(modelShaderProgram);
-    glGetProgramiv(modelShaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(modelShaderProgram, 512, NULL, infoLog);
-        printf("Error! Making Shader Program: %s\n", infoLog);
-    }
-    const unsigned int textureShaderProgram = glCreateProgram();
-    glAttachShader(textureShaderProgram, modelVertexShader);
-    glAttachShader(textureShaderProgram, textureShader);
-    glLinkProgram(textureShaderProgram);
-    glGetProgramiv(textureShaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(textureShaderProgram, 512, NULL, infoLog);
-        printf("Error! Making Shader Program: %s\n", infoLog);
-    }
-
-    glDeleteShader(modelVertexShader);
-    glDeleteShader(fragmentShader);
-    glDeleteShader(textureShader);
-
     {
+        core::Shader modelShader("shaders/modelVertex.vert", "shaders/fragment.frag");
+        core::Shader textureShader("shaders/modelVertex.vert", "shaders/texture.frag");
+
+        if (!modelShader.isValid() || !textureShader.isValid()) {
+            printf("Failed to initialize shaders\n");
+            return -1;
+        }
+
         // Mesh can't be copied, so move it in: push_back moves the temporary,
         // std::move hands the vector to the model (don't use quadMeshes afterwards).
         std::vector<core::Mesh> quadMeshes;
@@ -166,10 +116,6 @@ int main() {
         glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), static_cast<float>(g_width) / static_cast<float>(g_height), 0.1f, 100.0f);
 
-        GLint mvpMatrixUniform = glGetUniformLocation(modelShaderProgram, "mvpMatrix");
-        GLint textureModelUniform = glGetUniformLocation(textureShaderProgram, "mvpMatrix");
-        GLint textureUniform = glGetUniformLocation(textureShaderProgram, "text");
-
         double currentTime = glfwGetTime();
         double finishFrameTime = 0.0;
         float deltaTime = 0.0f;
@@ -188,17 +134,17 @@ int main() {
             processInput(window);
             suzanne.rotate(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(rotationStrength) * static_cast<float>(deltaTime));
 
-            glUseProgram(textureShaderProgram);
-            glUniformMatrix4fv(textureModelUniform, 1, GL_FALSE, glm::value_ptr(projection * view * quadModel.getModelMatrix()));
+            textureShader.use();
+            textureShader.setMat4("mvpMatrix", (projection * view * quadModel.getModelMatrix()));
             glActiveTexture(GL_TEXTURE0);
-            glUniform1i(textureUniform, 0);
+            textureShader.setInt("text", 0);
             glBindTexture(GL_TEXTURE_2D, cmgtGatoTexture.getId());
             quadModel.render();
             glBindVertexArray(0);
             glActiveTexture(GL_TEXTURE0);
 
-            glUseProgram(modelShaderProgram);
-            glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, glm::value_ptr(projection * view * suzanne.getModelMatrix()));
+            modelShader.use();
+            modelShader.setMat4("mvpMatrix", (projection * view * suzanne.getModelMatrix()));
             suzanne.render();
             glBindVertexArray(0);
 
@@ -213,7 +159,6 @@ int main() {
         }
     }
 
-    glDeleteProgram(modelShaderProgram);
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
