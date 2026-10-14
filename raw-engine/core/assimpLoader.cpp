@@ -18,7 +18,7 @@ namespace core {
         std::string directory = path.substr(0, path.find_last_of('/'));
         std::vector<Mesh> meshes;
         processNode(scene->mRootNode, scene, meshes);
-        return Model(std::move(meshes));  // move, not copy: `meshes` is a local we don't need anymore
+        return Model(std::move(meshes));  // move, don't copy
     }
 
     void AssimpLoader::processNode(aiNode *node, const aiScene *scene, std::vector<Mesh>& meshes) {

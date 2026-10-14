@@ -4,9 +4,10 @@
 
 namespace core {
     Texture::Texture(const std::string &path) {
-        glGenTextures(1, &id);
+
         int width, height, nrComponents;
         if (unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrComponents, 0)) {
+            glGenTextures(1, &id);
             GLenum format = 0;
             if (nrComponents == 1) {
                 format = GL_RED;
@@ -29,12 +30,31 @@ namespace core {
             glBindTexture(GL_TEXTURE_2D, 0);
             stbi_image_free(data);
         } else {
-            printf("Texture failed to load at path: %s\n", path.c_str());
-            stbi_image_free(data);
+            printf("Failed to load texture from %s.\r\n", path.c_str());
         }
     }
 
-    GLuint Texture::getId() {
+    GLuint Texture::getId() const{
         return id;
+    }
+
+    Texture::Texture(Texture &&other) noexcept {
+        id = other.id;
+        other.id = 0;
+    }
+
+    Texture& Texture::operator=(Texture &&other) noexcept {
+        if (this != &other) {
+            if (id != 0) glDeleteTextures(1, &id);
+            id = other.id;
+            other.id = 0;
+        }
+        return *this;
+    }
+
+    Texture::~Texture() {
+        if (id != 0) {
+            glDeleteTextures(1, &id);
+        }
     }
 }

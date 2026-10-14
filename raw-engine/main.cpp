@@ -139,75 +139,78 @@ int main() {
     glDeleteShader(fragmentShader);
     glDeleteShader(textureShader);
 
-    // Mesh can't be copied, so we build the vector by moving. `{quad}` would copy, so it is gone.
-    // generateQuad() returns a temporary -> push_back moves it in. After std::move(quadMeshes) the vector is empty: don't use it.
-    std::vector<core::Mesh> quadMeshes;
-    quadMeshes.push_back(core::Mesh::generateQuad());
-    core::Model quadModel(std::move(quadMeshes));
-    quadModel.translate(glm::vec3(0,0,-2.5));
-    quadModel.scale(glm::vec3(5, 5, 1));
+    {
+        // Mesh can't be copied, so move it in: push_back moves the temporary,
+        // std::move hands the vector to the model (don't use quadMeshes afterwards).
+        std::vector<core::Mesh> quadMeshes;
+        quadMeshes.push_back(core::Mesh::generateQuad());
+        core::Model quadModel(std::move(quadMeshes));
+        quadModel.translate(glm::vec3(0,0,-2.5));
+        quadModel.scale(glm::vec3(5, 5, 1));
 
-    core::Model suzanne = core::AssimpLoader::loadModel("models/nonormalmonkey.obj");
-    core::Texture cmgtGatoTexture("textures/CMGaTo_crop.png");
+        core::Model suzanne = core::AssimpLoader::loadModel("models/nonormalmonkey.obj");
+        core::Texture cmgtGatoTexture("textures/CMGaTo_crop.png");
 
-    glm::vec4 clearColor = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
-    glClearColor(clearColor.r,
-                 clearColor.g, clearColor.b, clearColor.a);
+        glm::vec4 clearColor = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
+        glClearColor(clearColor.r,
+                     clearColor.g, clearColor.b, clearColor.a);
 
-    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 10.0f);
-    glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
-    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
-    glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
+        glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 10.0f);
+        glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
+        glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+        glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
+        glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
 
-    //VP
-    glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), static_cast<float>(g_width) / static_cast<float>(g_height), 0.1f, 100.0f);
+        //VP
+        glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), static_cast<float>(g_width) / static_cast<float>(g_height), 0.1f, 100.0f);
 
-    GLint mvpMatrixUniform = glGetUniformLocation(modelShaderProgram, "mvpMatrix");
-    GLint textureModelUniform = glGetUniformLocation(textureShaderProgram, "mvpMatrix");
-    GLint textureUniform = glGetUniformLocation(textureShaderProgram, "text");
+        GLint mvpMatrixUniform = glGetUniformLocation(modelShaderProgram, "mvpMatrix");
+        GLint textureModelUniform = glGetUniformLocation(textureShaderProgram, "mvpMatrix");
+        GLint textureUniform = glGetUniformLocation(textureShaderProgram, "text");
 
-    double currentTime = glfwGetTime();
-    double finishFrameTime = 0.0;
-    float deltaTime = 0.0f;
-    float rotationStrength = 100.0f;
-    while (!glfwWindowShouldClose(window)) {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        double currentTime = glfwGetTime();
+        double finishFrameTime = 0.0;
+        float deltaTime = 0.0f;
+        float rotationStrength = 100.0f;
 
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-        ImGui::Begin("Raw Engine v2");
-        ImGui::Text("Hello :)");
-        ImGui::End();
+        while (!glfwWindowShouldClose(window)) {
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        processInput(window);
-        suzanne.rotate(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(rotationStrength) * static_cast<float>(deltaTime));
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+            ImGui::Begin("Raw Engine v2");
+            ImGui::Text("Hello :)");
+            ImGui::End();
 
-        glUseProgram(textureShaderProgram);
-        glUniformMatrix4fv(textureModelUniform, 1, GL_FALSE, glm::value_ptr(projection * view * quadModel.getModelMatrix()));
-        glActiveTexture(GL_TEXTURE0);
-        glUniform1i(textureUniform, 0);
-        glBindTexture(GL_TEXTURE_2D, cmgtGatoTexture.getId());
-        quadModel.render();
-        glBindVertexArray(0);
-        glActiveTexture(GL_TEXTURE0);
+            processInput(window);
+            suzanne.rotate(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(rotationStrength) * static_cast<float>(deltaTime));
 
-        glUseProgram(modelShaderProgram);
-        glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, glm::value_ptr(projection * view * suzanne.getModelMatrix()));
-        suzanne.render();
-        glBindVertexArray(0);
+            glUseProgram(textureShaderProgram);
+            glUniformMatrix4fv(textureModelUniform, 1, GL_FALSE, glm::value_ptr(projection * view * quadModel.getModelMatrix()));
+            glActiveTexture(GL_TEXTURE0);
+            glUniform1i(textureUniform, 0);
+            glBindTexture(GL_TEXTURE_2D, cmgtGatoTexture.getId());
+            quadModel.render();
+            glBindVertexArray(0);
+            glActiveTexture(GL_TEXTURE0);
 
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            glUseProgram(modelShaderProgram);
+            glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, glm::value_ptr(projection * view * suzanne.getModelMatrix()));
+            suzanne.render();
+            glBindVertexArray(0);
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-        finishFrameTime = glfwGetTime();
-        deltaTime = static_cast<float>(finishFrameTime - currentTime);
-        currentTime = finishFrameTime;
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+            glfwSwapBuffers(window);
+            glfwPollEvents();
+            finishFrameTime = glfwGetTime();
+            deltaTime = static_cast<float>(finishFrameTime - currentTime);
+            currentTime = finishFrameTime;
+        }
     }
 
     glDeleteProgram(modelShaderProgram);

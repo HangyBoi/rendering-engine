@@ -6,20 +6,20 @@
 #include "vertex.h"
 
 namespace core {
-    // Owns its GPU buffers (RAII): created in the constructor, deleted in the destructor.
-    // Exactly ONE owner per GPU object -> copying is deleted, moving is allowed.
+    // Owns its GPU buffers: created in the constructor, freed in the destructor.
+    // One owner only: copy is deleted, move is allowed.
     class Mesh {
     private:
         std::vector<Vertex> vertices;
         std::vector<GLuint> indices;
-        // Handles = "tickets" (just numbers). The real data lives on the GPU. 0 = "owns nothing".
+        // Handles are just numbers pointing to GPU data. 0 = owns nothing.
         GLuint VAO = 0;
         GLuint VBO = 0;
         GLuint EBO = 0;
 
     public:
         Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices);
-        void render();
+        void render() const;
         static Mesh generateQuad();
 
         // Copy Constructor

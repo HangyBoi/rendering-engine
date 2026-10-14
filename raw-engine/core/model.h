@@ -11,8 +11,8 @@ namespace core {
         std::vector<core::Mesh> meshes;
         glm::mat4 modelMatrix;
     public:
-        // std::move: take the caller's meshes instead of copying them (a Mesh can't be copied anyway).
-        // Model needs no destructor/move code of its own: the vector handles it all ("rule of zero").
+        // std::move: take the meshes, don't copy (Mesh can't be copied).
+        // No destructor/move code needed here: the vector handles it ("rule of zero").
         Model(std::vector<core::Mesh> meshes) : meshes(std::move(meshes)), modelMatrix(1) {}
 
         void render();
