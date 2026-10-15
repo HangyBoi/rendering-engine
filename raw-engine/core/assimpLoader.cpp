@@ -55,6 +55,6 @@ namespace core {
                 indices.push_back(face.mIndices[j]);
             }
         }
-        return Mesh(vertices, indices);
+        return Mesh(std::move(vertices), std::move(indices));  // move the vectors in, no copy
     }
 }

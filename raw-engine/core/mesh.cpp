@@ -1,5 +1,7 @@
 #include "mesh.h"
 
+#include <cstddef>
+
 namespace core {
     Mesh::Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices) : vertices(std::move(vertices)), indices(std::move(indices)) {
         setupBuffers();
@@ -11,11 +13,12 @@ namespace core {
         glGenBuffers(1, &EBO);
         glBindVertexArray(VAO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizei>(sizeof(Vertex) * vertices.size()), &vertices[0],
+        // .data() instead of &v[0]: safe even when the vector is empty
+        glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * vertices.size()), vertices.data(),
                      GL_STATIC_DRAW);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizei>(sizeof(unsigned int) * indices.size()),
-                     &indices[0], GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(GLuint) * indices.size()),
+                     indices.data(), GL_STATIC_DRAW);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *) 0);
         glEnableVertexAttribArray(1);
@@ -59,7 +62,7 @@ namespace core {
             vertexVector.emplace_back(pos[i], normals[i], uvs[i]);
         }
 
-        return Mesh(vertexVector, indices);
+        return Mesh(std::move(vertexVector), indices);  // vertices are moved in, not copied
     }
 
     // Move constructor: take other's handles. Nothing to free first, this Mesh is new.

@@ -1,8 +1,11 @@
 #include "texture.h"
+
+#include <cstdio>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 namespace core {
+    // Load the image and upload it to the GPU. On failure: print why and keep id = 0.
     Texture::Texture(const std::string &path) {
 
         int width, height, nrComponents;
@@ -38,11 +41,13 @@ namespace core {
         return id;
     }
 
+    // Move constructor: take other's texture, leave other empty (0).
     Texture::Texture(Texture &&other) noexcept {
         id = other.id;
         other.id = 0;
     }
 
+    // Move assignment: free our old texture first, then take other's.
     Texture& Texture::operator=(Texture &&other) noexcept {
         if (this != &other) {
             if (id != 0) glDeleteTextures(1, &id);
@@ -52,6 +57,7 @@ namespace core {
         return *this;
     }
 
+    // Hand the texture back to OpenGL. Needs a live GL context: must run before glfwTerminate().
     Texture::~Texture() {
         if (id != 0) {
             glDeleteTextures(1, &id);

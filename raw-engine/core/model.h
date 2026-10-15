@@ -15,7 +15,7 @@ namespace core {
         // No destructor/move code needed here: the vector handles it ("rule of zero").
         Model(std::vector<core::Mesh> meshes) : meshes(std::move(meshes)), modelMatrix(1) {}
 
-        void render();
+        void render() const;
 
         void translate(glm::vec3 translation);
         void rotate(glm::vec3 axis, float radians);

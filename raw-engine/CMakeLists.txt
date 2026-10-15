@@ -15,8 +15,6 @@ set(IMGUI_SOURCES
         imgui/imgui_widgets.cpp
         imgui/backends/imgui_impl_glfw.cpp
         imgui/backends/imgui_impl_opengl3.cpp
-        core/texture.cpp
-        core/texture.h
 )
 
 add_executable(RawEngine main.cpp
@@ -30,6 +28,10 @@ add_executable(RawEngine main.cpp
         core/model.h
         core/shader.cpp
         core/shader.h
+        core/texture.cpp
+        core/texture.h
+        core/camera.cpp
+        core/camera.h
 )
 
 add_custom_command(
