@@ -4,11 +4,7 @@ A small 3D renderer written in C++20 with OpenGL. It opens a window, draws a tex
 
 This repository is a C++ code sample. The graphics are only the setting. The interesting part is the C++ underneath: classes that own their resources safely, report errors without crashing, and keep their inner workings private. Each class has a page in the [Wiki](https://github.com/HangyBoi/rendering-engine/wiki) that explains the design choices.
 
-<!--
-IMAGE 1 (hero GIF, 5 to 8 seconds, flying around the scene with the right mouse button held).
-Save it as docs/images/fly-camera.gif, then delete this comment block and uncomment the next line:
-![Flying around the scene](docs/images/fly-camera.gif)
--->
+<img src="docs/images/fly-camera-small.gif" width="700" alt="Flying around the scene with the camera">
 
 ## Words you may not know
 
