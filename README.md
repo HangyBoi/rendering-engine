@@ -2,7 +2,9 @@
 
 A small 3D renderer written in C++20 with OpenGL. It opens a window, draws a textured square and a 3D monkey head, and lets you fly around the scene with the mouse and keyboard.
 
-This repository is a C++ code sample. The graphics are only the setting. The interesting part is the C++ underneath: classes that own their resources safely, report errors without crashing, and keep their inner workings private. Each class has a page in the [Wiki](https://github.com/HangyBoi/rendering-engine/wiki) that explains the design choices.
+This repository is a code sample, and also an ongoing study project. I am learning C++ and OpenGL together, and I want to keep growing in both. They fit well side by side: OpenGL gives me real, visible problems to solve (a window, a mesh, a camera), and C++ is how I solve them safely. The classes here own their graphics resources, report errors without crashing, and keep their inner workings private.
+
+Each class has a page in the [Wiki](https://github.com/HangyBoi/rendering-engine/wiki) that explains the design choices.
 
 <img src="docs/images/fly-camera-small.gif" width="700" alt="Flying around the scene with the camera">
 
