@@ -50,10 +50,10 @@ The project started from the hand-out of a course (RawEngine v2). The table show
 | `core/assimpLoader.h`, `core/assimpLoader.cpp` | Hand-out, small changes | Moves the finished vectors instead of copying them. |
 | `core/vertex.h` | Hand-out | Unchanged. |
 | `main.cpp` | Hand-out, rewritten | Uses Shader and Camera, adds mouse and keyboard input, and is split into setup, input, scene and entry point. |
-| `shaders/` | Hand-out | Files renamed to `.vert` / `.frag`, and one uniform renamed to `diffuseTexture` in `texture.frag`. |
+| `shaders/` | Hand-out | Not part of my C++ work. |
 | `imgui/` | Third party | Dear ImGui, bundled with the hand-out. |
 | `models/`, `textures/` | Course assets | The monkey model and the cat image. |
-| `bootcamp-01/` | Mine | My solutions to the C++ basics exercises (pointers, arrays, functions). |
+| `bootcamp-01/` | Mine | My solutions to the C++ basics exercises (pointers, arrays, functions) that the students of the course work through. I help those students. |
 
 The Git history follows the same steps, so `git log` shows how each class was built.
 
@@ -114,13 +114,9 @@ if (!modelShader.isValid() || !textureShader.isValid()) {
 }
 ```
 
-<!--
-IMAGE 2 (console screenshot of a shader error).
-How to make it: in main.cpp, temporarily change "shaders/texture.frag" to "shaders/texture.fragx", run, and
-take a screenshot of the Run console. Then put the name back. Do not commit the wrong name.
-Save it as docs/images/shader-error.png, then delete this comment block and uncomment the next line:
+Here the file name is wrong on purpose. The Shader names the file that failed, the program stops cleanly, and the exit code is -1.
+
 ![Console output when a shader file is missing](docs/images/shader-error.png)
--->
 
 ### 4. Hiding the details, and saving work
 
@@ -198,12 +194,10 @@ You need CMake 3.29 or newer and a C++20 compiler.
    Then run Tools, CMake, Reset Cache and Reload Project.
 3. Open the repository folder, select the `RawEngine` target and run it. The shaders, model and texture are copied next to the executable by the build.
 
-More detail is in [raw-engine/README.md](raw-engine/README.md).
-
 ## Project layout
 
 ```
-bootcamp-01/        C++ basics exercises
+bootcamp-01/        C++ basics exercises for the course students
 bootcamp-02/        scratch work
 raw-engine/
     main.cpp        window, scene, input, main loop

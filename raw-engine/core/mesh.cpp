@@ -46,13 +46,15 @@ namespace core {
                 glm::vec3(0.0f, 0.0f, 1.0f),
                 glm::vec3(0.0f, 0.0f, 1.0f)
         };
+        // v counts from the TOP of the image (stb loads the top row first, and AssimpLoader flips
+        // its UVs the same way), so the top of the quad gets v = 0 and the bottom gets v = 1.
         const glm::vec2 uvs[] = {
-                glm::vec2(0, 0),
-                glm::vec2(1, 0),
                 glm::vec2(0, 1),
-                glm::vec2(1, 0),
                 glm::vec2(1, 1),
-                glm::vec2(0, 1)
+                glm::vec2(0, 0),
+                glm::vec2(1, 1),
+                glm::vec2(1, 0),
+                glm::vec2(0, 0)
         };
         const std::vector<GLuint> indices = {0, 1, 2, 3, 4, 5};
 

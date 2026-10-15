@@ -19,8 +19,7 @@
 #endif
 
 #ifdef VSTUDIO
-// Note: install imgui with:
-//     ./vcpkg.exe install imgui[glfw-binding,opengl3-binding]
+// Dear ImGui is bundled in the imgui/ folder, no vcpkg package needed.
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
