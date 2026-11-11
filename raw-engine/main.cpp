@@ -175,6 +175,7 @@ int runScene(GLFWwindow *window) {
 
     core::Model suzanne = core::AssimpLoader::loadModel("models/nonormalmonkey.obj");
     core::Texture cmgtGatoTexture("textures/CMGaTo_crop.png");
+    core::Texture brickNormalTexture("textures/brickwall_normal.jpg");
 
     // --- Camera: starts at z = 10, looking down -Z ---
     core::Camera camera(glm::vec3(0.0f, 0.0f, 10.0f), 45.0f,
@@ -220,6 +221,11 @@ int runScene(GLFWwindow *window) {
 
         modelShader.use();
         modelShader.setMat4("mvpMatrix", viewProjection * suzanne.getModelMatrix());
+        modelShader.setMat4("modelMatrix", suzanne.getModelMatrix());   // for fragPosWorld and the TBN
+        modelShader.setVec3("viewPosition", camera.getPosition());      // camera position, world space
+        glActiveTexture(GL_TEXTURE0);
+        modelShader.setInt("normalMap", 0);                             // sampler reads unit 0
+        glBindTexture(GL_TEXTURE_2D, brickNormalTexture.getId());
         suzanne.render();
         glBindVertexArray(0);
 

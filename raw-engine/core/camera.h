@@ -14,6 +14,7 @@ namespace core {
 
         glm::mat4 getViewMatrix() const;
         glm::mat4 getProjectionMatrix() const;
+        glm::vec3 getPosition() const;
         // Call when the window size changes, otherwise the picture gets stretched
         void setAspectRatio(float newAspectRatio);
 

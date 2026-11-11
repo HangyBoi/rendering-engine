@@ -37,6 +37,8 @@ namespace core {
         std::vector<Vertex> vertices;
         std::vector<GLuint> indices;
         glm::vec2 uvs(0, 0);
+        glm::vec3 tangent(0.0f);
+
         for(unsigned int i = 0; i < mesh->mNumVertices; i++) {
             if (mesh->mTextureCoords[0] != nullptr) {
                 aiVector3D assimpUVs = mesh->mTextureCoords[0][i];
@@ -46,7 +48,12 @@ namespace core {
                 uvs.x = 0.0f;
                 uvs.y = 0.0f;
             }
-            vertices.emplace_back(glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z), glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z), uvs);
+
+            if (mesh -> mTangents != nullptr) {
+                tangent = glm::vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
+            }
+
+            vertices.emplace_back(glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z), glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z), uvs, tangent);
         }
         aiFace face;
         for (unsigned int i = 0; i < mesh->mNumFaces; i++) {

@@ -25,6 +25,8 @@ namespace core {
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *) offsetof(Vertex, normal));
         glEnableVertexAttribArray(2);
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *) offsetof(Vertex, uv));
+        glEnableVertexAttribArray(3);
+        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *) offsetof(Vertex, tangent));
         glBindVertexArray(0);
     }
 
@@ -46,6 +48,7 @@ namespace core {
                 glm::vec3(0.0f, 0.0f, 1.0f),
                 glm::vec3(0.0f, 0.0f, 1.0f)
         };
+
         // v counts from the TOP of the image (stb loads the top row first, and AssimpLoader flips
         // its UVs the same way), so the top of the quad gets v = 0 and the bottom gets v = 1.
         const glm::vec2 uvs[] = {
@@ -56,12 +59,21 @@ namespace core {
                 glm::vec2(1, 0),
                 glm::vec2(0, 0)
         };
+
+        const glm::vec3 tangents[] = {
+            glm::vec3(1.0f, 0.0f, 0.0f),
+            glm::vec3(1.0f, 0.0f, 0.0f),
+            glm::vec3(1.0f, 0.0f, 0.0f),
+            glm::vec3(1.0f, 0.0f, 0.0f),
+            glm::vec3(1.0f, 0.0f, 0.0f),
+            glm::vec3(1.0f, 0.0f, 0.0f)
+        };
         const std::vector<GLuint> indices = {0, 1, 2, 3, 4, 5};
 
         std::vector<Vertex> vertexVector;
         vertexVector.reserve(6);
         for (int i = 0; i < 6; ++i) {
-            vertexVector.emplace_back(pos[i], normals[i], uvs[i]);
+            vertexVector.emplace_back(pos[i], normals[i], uvs[i], tangents[i]);
         }
 
         return Mesh(std::move(vertexVector), indices);  // vertices are moved in, not copied

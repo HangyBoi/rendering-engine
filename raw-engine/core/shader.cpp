@@ -85,6 +85,10 @@ namespace core {
         glUniform1i(getUniformLocation(name), value);
     }
 
+    void Shader::setVec3(const std::string& name, const glm::vec3& value) const {
+        glUniform3f(getUniformLocation(name), value.x, value.y, value.z);
+    }
+
     GLint Shader::getUniformLocation(const std::string& name) const {
         // Asked before? Return the saved slot.
         auto it = uniformCache.find(name);

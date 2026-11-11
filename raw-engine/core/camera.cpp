@@ -21,6 +21,10 @@ namespace core {
         return glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
     }
 
+    glm::vec3 Camera::getPosition() const {
+        return position;
+    }
+
     void Camera::setAspectRatio(float newAspectRatio) {
         if (newAspectRatio <= 0.0f) return;  // e.g. a minimized window: keep the old value
         aspectRatio = newAspectRatio;
